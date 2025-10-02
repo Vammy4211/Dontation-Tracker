@@ -3,7 +3,9 @@ name: Run Python Script
 on:
   push:
     branches:
-      - main # Trigger on push to the main branch
+      - main  # Trigger on push to the main branch
+    branches:
+        - MP  # Trigger on Push to MP branch
   schedule:
     - cron: '0 0 * * *' # Run daily at midnight UTC
 
