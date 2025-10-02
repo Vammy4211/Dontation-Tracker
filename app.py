@@ -45,7 +45,6 @@ except Exception as e:
         exit(1)
 
 print("MP")
-#print("abc")
 # Collections
 users = db.users
 campaigns = db.campaigns
