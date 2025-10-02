@@ -44,7 +44,8 @@ except Exception as e:
         print("Please check your MongoDB connection or start local MongoDB service")
         exit(1)
 
-print("Hello")
+#print("Hello")
+#print("abc")
 # Collections
 users = db.users
 campaigns = db.campaigns
