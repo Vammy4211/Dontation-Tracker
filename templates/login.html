@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Login - Online Donation Tracker{% endblock %}
+
+{% block content %}
+<main aria-label="Login">
+  <div class="auth-bg d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <!-- Centered card with fixed max-width -->
+  <div class="card shadow-lg border-0 auth-card w-100">
+      
+      <!-- Gradient header -->
+      <div class="auth-card__header text-white text-center py-4">
+        <i class="fas fa-sign-in-alt fa-2x mb-2" aria-hidden="true"></i>
+        <h2 class="h3 fw-bold mb-1">Welcome Back</h2>
+        <p class="mb-0 text-white-50 small">Sign in to your account</p>
+      </div>
+
+      <div class="card-body p-4 p-md-5">
+        <form method="POST" novalidate>
+          <!-- Username -->
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control" id="username" name="username" required autocomplete="username">
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
+            </div>
+          </div>
+
+          <!-- Remember me -->
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="rememberMe">
+            <label class="form-check-label" for="rememberMe">Remember me</label>
+          </div>
+
+          <!-- Submit -->
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-sign-in-alt me-1"></i> Sign In
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-4">
+
+        <!-- Sign up link -->
+        <div class="text-center">
+          <p class="text-muted mb-2">Don't have an account?</p>
+          <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+            <i class="fas fa-user-plus me-1"></i> Create Account
+          </a>
+        </div>
+
+        <!-- Demo creds -->
+        <div class="alert alert-secondary mt-4 py-2 px-3 small mb-0">
+          <strong>Demo Admin:</strong> admin / admin123
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .auth-bg { background: #F7F9FC; }
+    .auth-card { border-radius: 16px; overflow: hidden; }
+    .auth-card__header {
+      background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    }
+  </style>
+</main>
+{% endblock %}

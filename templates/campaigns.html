@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+
+{% block title %}Campaigns - Online Donation Tracker{% endblock %}
+
+{% block description %}Browse and support meaningful campaigns. Find causes you care about and make a difference with your donation.{% endblock %}
+
+{% block extra_head %}
+<meta property="og:title" content="Browse Campaigns - Online Donation Tracker">
+<meta property="og:description" content="Discover meaningful causes and make a difference through donations.">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4" style="max-width: 1400px; margin: 0 auto;">
+<!-- Page Header -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="page-header text-center text-md-start">
+            <h1 class="display-5 mb-3">
+                <i class="fas fa-list text-primary me-3" aria-hidden="true"></i>
+                All Campaigns
+            </h1>
+            <p class="lead text-muted mb-4">Support causes that matter to you and make a lasting impact</p>
+            
+            <!-- Campaign Statistics -->
+            <div class="row row-cols-2 row-cols-md-4 text-center g-3">
+                <div class="col">
+                    <div class="stat-card">
+                        <div class="stat-number text-primary">{{ campaigns|length }}</div>
+                        <div class="stat-label text-muted">Active Campaigns</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="stat-card">
+                        <div class="stat-number text-success">${{ "%.0f"|format(campaigns|sum(attribute='current_amount') or 0) }}</div>
+                        <div class="stat-label text-muted">Total Raised</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="stat-card">
+                        <div class="stat-number text-info">{{ campaigns|map(attribute='donations')|map('length')|sum or 0 }}</div>
+                        <div class="stat-label text-muted">Donations Made</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="stat-card">
+                        <div class="stat-number text-warning">{{ campaigns|selectattr('status', 'equalto', 'active')|list|length }}</div>
+                        <div class="stat-label text-muted">Goals Reached</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search, Filter, and Sort Controls -->
+<div class="row mb-4 g-3">
+    <div class="col-lg-5">
+        <div class="search-box">
+            <label for="searchInput" class="visually-hidden">Search campaigns</label>
+            <div class="input-group">
+                <span class="input-group-text" id="search-addon">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+                <input type="text" class="form-control form-control-lg" placeholder="Search campaigns by title or description..." 
+                       id="searchInput" aria-describedby="search-addon" autocomplete="off">
+                <button class="btn btn-outline-primary" type="button" onclick="clearSearch()" 
+                        id="clearSearchBtn" style="display: none;" aria-label="Clear search">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="filter-controls">
+            <label for="categoryFilter" class="form-label">Filter by Category</label>
+            <select class="form-select form-select-lg" id="categoryFilter" aria-label="Filter campaigns by category">
+                <option value="">All Categories</option>
+                <option value="education">Education</option>
+                <option value="health">Health & Medical</option>
+                <option value="environment">Environment</option>
+                <option value="community">Community</option>
+                <option value="emergency">Emergency Relief</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="col-lg-3">
+        <div class="sort-controls">
+            <label for="sortSelect" class="form-label">Sort by</label>
+            <select class="form-select form-select-lg" id="sortSelect" aria-label="Sort campaigns">
+                <option value="date_new">Newest First</option>
+                <option value="amount_high">Highest Raised</option>
+                <option value="progress_high">Most Progress</option>
+                <option value="deadline_urgent">Ending Soon</option>
+                <option value="popularity_high">Most Popular</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <div class="campaign-count">
+            <span class="text-muted">Showing <span id="visibleCount">{{ campaigns|length }}</span> of {{ campaigns|length }} campaigns</span>
+        </div>
+        
+        {% if session.user_id %}
+        <button class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#createCampaignModal"
+                aria-label="Create a new campaign">
+            <i class="fas fa-plus me-2" aria-hidden="true"></i>Create Campaign
+        </button>
+        {% else %}
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg" 
+           aria-label="Register to create campaigns">
+            <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Register to Create
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Campaigns Grid -->
+{% if campaigns %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="campaignsGrid" role="main" aria-label="Campaign listings">
+    {% for campaign in campaigns %}
+    <div class="col campaign-item" 
+         data-category="{{ campaign.category or 'other' }}" 
+         data-title="{{ campaign.title|lower }}" 
+         data-description="{{ campaign.description|lower }}">
+        
+        <article class="card campaign-card h-100 shadow-hover border-0" role="article" 
+                 aria-labelledby="campaign-title-{{ loop.index }}">
+            
+            <!-- Campaign Status Badge -->
+            {% if campaign.status == 'completed' %}
+            <div class="position-absolute top-0 end-0 m-3">
+                <span class="badge bg-success rounded-pill">
+                    <i class="fas fa-check me-1" aria-hidden="true"></i>Goal Reached
+                </span>
+            </div>
+            {% elif campaign.days_remaining and campaign.days_remaining <= 7 %}
+            <div class="position-absolute top-0 end-0 m-3">
+                <span class="badge bg-warning text-dark rounded-pill">
+                    <i class="fas fa-clock me-1" aria-hidden="true"></i>{{ campaign.days_remaining }}d left
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column p-4">
+                <!-- Campaign Header -->
+                <div class="campaign-header mb-3">
+                    <h5 class="card-title fw-bold mb-2" id="campaign-title-{{ loop.index }}">
+                        {{ campaign.title }}
+                    </h5>
+                    
+                    {% if campaign.category %}
+                    <span class="badge bg-light text-dark mb-2">
+                        <i class="fas fa-tag me-1" aria-hidden="true"></i>{{ campaign.category|title }}
+                    </span>
+                    {% endif %}
+                    
+                    <p class="card-text text-muted lh-base">
+                        {{ campaign.description[:150] }}{% if campaign.description|length > 150 %}...{% endif %}
+                    </p>
+                </div>
+                
+                <!-- Campaign Progress Stats -->
+                <div class="campaign-stats mb-4">
+                    <div class="row row-cols-3 text-center g-2">
+                        <div class="col">
+                            <div class="stat-item">
+                                <div class="stat-value text-muted small">Goal</div>
+                                <div class="stat-number fw-bold text-primary">${{ "%.0f"|format(campaign.goal_amount) }}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="stat-item">
+                                <div class="stat-value text-muted small">Raised</div>
+                                <div class="stat-number fw-bold text-success">${{ "%.0f"|format(campaign.current_amount) }}</div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="stat-item">
+                                <div class="stat-value text-muted small">Progress</div>
+                                <div class="stat-number fw-bold text-info">{{ "%.0f"|format(campaign.progress_percentage) }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Progress Bar -->
+                <div class="progress-container mb-4">
+                    <div class="progress" style="height: 12px; border-radius: 6px;" 
+                         role="progressbar" 
+                         aria-valuenow="{{ campaign.progress_percentage }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Campaign progress: {{ '%.0f'|format(campaign.progress_percentage) }}% complete">
+                        <div class="progress-bar bg-gradient" 
+                             style="width: {{ campaign.progress_percentage }}%; background: linear-gradient(45deg, var(--bs-success), var(--bs-primary));"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2 small text-muted">
+                        <span>${{ "%.0f"|format(campaign.current_amount) }} raised</span>
+                        <span>{{ "%.1f"|format(campaign.progress_percentage) }}% of goal</span>
+                    </div>
+                </div>
+                
+                <!-- Campaign Metadata -->
+                <div class="campaign-meta mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="creator-info d-flex align-items-center">
+                            <i class="fas fa-user-circle text-muted me-2" aria-hidden="true"></i>
+                            <small class="text-muted">by {{ campaign.creator.username if campaign.creator else 'Unknown' }}</small>
+                        </div>
+                        <div class="date-info d-flex align-items-center">
+                            <i class="fas fa-calendar text-muted me-2" aria-hidden="true"></i>
+                            <small class="text-muted">{{ campaign.created_at.strftime('%b %d, %Y') if campaign.created_at else 'Date unknown' }}</small>
+                        </div>
+                    </div>
+                    
+                    {% if campaign.donations and campaign.donations|length > 0 %}
+                    <div class="supporters-info text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-users me-1" aria-hidden="true"></i>
+                            {{ campaign.donations|length }} {{ 'supporter' if campaign.donations|length == 1 else 'supporters' }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="mt-auto">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('campaign_detail', campaign_id=campaign._id) }}" 
+                           class="btn btn-primary btn-lg" 
+                           aria-label="View details and donate to {{ campaign.title }}">
+                            <i class="fas fa-heart me-2" aria-hidden="true"></i>
+                            View & Donate
+                        </a>
+                        
+                        {% if session.user_id and campaign.creator_id == session.user_id %}
+                        <a href="{{ url_for('edit_campaign', campaign_id=campaign._id) }}" 
+                           class="btn btn-outline-secondary" 
+                           aria-label="Edit {{ campaign.title }}">
+                            <i class="fas fa-edit me-2" aria-hidden="true"></i>
+                            Edit Campaign
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="empty-state text-center py-5">
+            <div class="empty-state-icon mb-4">
+                <i class="fas fa-seedling fa-4x text-muted" aria-hidden="true"></i>
+            </div>
+            <h3 class="empty-state-title mb-3">No Active Campaigns Yet</h3>
+            <p class="empty-state-description text-muted mb-4 lead">
+                Be the pioneer! Create the first campaign and start making a difference in your community.
+                Every great cause begins with someone brave enough to take the first step.
+            </p>
+            
+            <div class="empty-state-actions">
+                {% if session.user_id %}
+                <button class="btn btn-primary btn-lg me-3" data-bs-toggle="modal" data-bs-target="#createCampaignModal"
+                        aria-label="Create the first campaign">
+                    <i class="fas fa-plus me-2" aria-hidden="true"></i>Create First Campaign
+                </button>
+                <a href="{{ url_for('home') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-home me-2" aria-hidden="true"></i>Back to Home
+                </a>
+                {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-3"
+                   aria-label="Register to create campaigns">
+                    <i class="fas fa-user-plus me-2" aria-hidden="true"></i>Register to Create Campaign
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2" aria-hidden="true"></i>Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Enhanced Create Campaign Modal -->
+{% if session.user_id %}
+<div class="modal fade" id="createCampaignModal" tabindex="-1" 
+     aria-labelledby="createCampaignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="createCampaignModalLabel">
+                    <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>
+                    Create New Campaign
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" 
+                        aria-label="Close modal"></button>
+            </div>
+            
+            <div class="modal-body p-4">
+                <form id="createCampaignForm" novalidate>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label for="campaignTitle" class="form-label fw-semibold">Campaign Title *</label>
+                            <input type="text" class="form-control form-control-lg" id="campaignTitle" 
+                                   required maxlength="100" 
+                                   aria-describedby="titleHelp titleFeedback">
+                            <div id="titleHelp" class="form-text">Choose a compelling title that clearly describes your cause</div>
+                            <div id="titleFeedback" class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="campaignCategory" class="form-label fw-semibold">Category</label>
+                            <select class="form-select form-select-lg" id="campaignCategory" 
+                                    aria-describedby="categoryHelp">
+                                <option value="">Select a category</option>
+                                <option value="education">Education</option>
+                                <option value="health">Health & Medical</option>
+                                <option value="environment">Environment</option>
+                                <option value="community">Community</option>
+                                <option value="emergency">Emergency Relief</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div id="categoryHelp" class="form-text">Help people find your campaign</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="goalAmount" class="form-label fw-semibold">Goal Amount ($) *</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="goalAmount" 
+                                       min="1" step="0.01" required 
+                                       aria-describedby="goalHelp goalFeedback">
+                            </div>
+                            <div id="goalHelp" class="form-text">Set a realistic and achievable goal</div>
+                            <div id="goalFeedback" class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <label for="campaignDescription" class="form-label fw-semibold">Description *</label>
+                            <textarea class="form-control" id="campaignDescription" rows="4" 
+                                      required maxlength="1000" 
+                                      aria-describedby="descHelp descFeedback"></textarea>
+                            <div id="descHelp" class="form-text">
+                                Tell your story. Explain why this cause matters and how donations will be used.
+                                <span class="float-end"><span id="charCount">0</span>/1000 characters</span>
+                            </div>
+                            <div id="descFeedback" class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="endDate" class="form-label fw-semibold">End Date</label>
+                            <input type="date" class="form-control form-control-lg" id="endDate" 
+                                   aria-describedby="dateHelp">
+                            <div id="dateHelp" class="form-text">Optional: Set a deadline to create urgency</div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="campaignImage" class="form-label fw-semibold">Campaign Image</label>
+                            <input type="file" class="form-control form-control-lg" id="campaignImage" 
+                                   accept="image/*" aria-describedby="imageHelp">
+                            <div id="imageHelp" class="form-text">Upload an inspiring image (optional)</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2" aria-hidden="true"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="createCampaign()" id="createCampaignBtn">
+                    <i class="fas fa-rocket me-2" aria-hidden="true"></i>Launch Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Enhanced search, filter, and sort functionality
+class CampaignManager {
+    constructor() {
+        this.campaigns = document.querySelectorAll('.campaign-item');
+        this.searchInput = document.getElementById('searchInput');
+        this.categoryFilter = document.getElementById('categoryFilter');
+        this.sortSelect = document.getElementById('sortSelect');
+        this.clearSearchBtn = document.getElementById('clearSearchBtn');
+        this.visibleCount = document.getElementById('visibleCount');
+        
+        this.initializeEventListeners();
+        this.updateVisibleCount();
+    }
+    
+    initializeEventListeners() {
+        // Search functionality with debouncing
+        let searchTimeout;
+        this.searchInput?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.filterCampaigns();
+                this.toggleClearButton();
+            }, 300);
+        });
+        
+        // Clear search button
+        this.clearSearchBtn?.addEventListener('click', () => {
+            this.searchInput.value = '';
+            this.filterCampaigns();
+            this.toggleClearButton();
+            this.searchInput.focus();
+        });
+        
+        // Category filter
+        this.categoryFilter?.addEventListener('change', () => {
+            this.filterCampaigns();
+        });
+        
+        // Sort functionality
+        this.sortSelect?.addEventListener('change', () => {
+            this.sortCampaigns();
+        });
+        
+        // Form validation for create campaign modal
+        this.initializeFormValidation();
+        
+        // Character counter for description
+        const descTextarea = document.getElementById('campaignDescription');
+        const charCount = document.getElementById('charCount');
+        descTextarea?.addEventListener('input', () => {
+            const count = descTextarea.value.length;
+            charCount.textContent = count;
+            charCount.className = count > 800 ? 'text-warning' : count > 950 ? 'text-danger' : '';
+        });
+    }
+    
+    filterCampaigns() {
+        const searchTerm = this.searchInput?.value.toLowerCase() || '';
+        const selectedCategory = this.categoryFilter?.value || '';
+        let visibleCount = 0;
+        
+        this.campaigns.forEach(campaign => {
+            const title = campaign.dataset.title || '';
+            const description = campaign.dataset.description || '';
+            const category = campaign.dataset.category || '';
+            
+            const matchesSearch = !searchTerm || 
+                title.includes(searchTerm) || 
+                description.includes(searchTerm);
+            
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+            
+            const isVisible = matchesSearch && matchesCategory;
+            campaign.style.display = isVisible ? 'block' : 'none';
+            
+            if (isVisible) visibleCount++;
+        });
+        
+        this.updateVisibleCount(visibleCount);
+        this.showNoResultsMessage(visibleCount === 0);
+    }
+    
+    sortCampaigns() {
+        const sortBy = this.sortSelect?.value || 'date_new';
+        const grid = document.getElementById('campaignsGrid');
+        const campaignsArray = Array.from(this.campaigns);
+        
+        campaignsArray.sort((a, b) => {
+            switch (sortBy) {
+                case 'amount_high':
+                    return this.extractAmount(b) - this.extractAmount(a);
+                case 'progress_high':
+                    return this.extractProgress(b) - this.extractProgress(a);
+                case 'date_new':
+                default:
+                    return this.extractDate(b) - this.extractDate(a);
+            }
+        });
+        
+        campaignsArray.forEach(campaign => grid?.appendChild(campaign));
+    }
+    
+    extractAmount(campaign) {
+        const amountEl = campaign.querySelector('.stat-number.text-success');
+        return parseFloat(amountEl?.textContent.replace(/[$,]/g, '') || 0);
+    }
+    
+    extractProgress(campaign) {
+        const progressEl = campaign.querySelector('.stat-number.text-info');
+        return parseFloat(progressEl?.textContent.replace('%', '') || 0);
+    }
+    
+    extractDate(campaign) {
+        const dateEl = campaign.querySelector('.date-info small');
+        return new Date(dateEl?.textContent || 0).getTime();
+    }
+    
+    toggleClearButton() {
+        if (this.clearSearchBtn && this.searchInput) {
+            this.clearSearchBtn.style.display = 
+                this.searchInput.value ? 'block' : 'none';
+        }
+    }
+    
+    updateVisibleCount(count = null) {
+        if (this.visibleCount) {
+            const visible = count !== null ? count : 
+                Array.from(this.campaigns).filter(c => c.style.display !== 'none').length;
+            this.visibleCount.textContent = visible;
+        }
+    }
+    
+    showNoResultsMessage(show) {
+        let noResultsMsg = document.getElementById('noResultsMessage');
+        
+        if (show && !noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'noResultsMessage';
+            noResultsMsg.className = 'col-12 text-center py-5';
+            noResultsMsg.innerHTML = `
+                <div class="text-muted">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h4>No campaigns found</h4>
+                    <p>Try adjusting your search terms or filters</p>
+                </div>
+            `;
+            document.getElementById('campaignsGrid')?.appendChild(noResultsMsg);
+        } else if (!show && noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+    
+    initializeFormValidation() {
+        const form = document.getElementById('createCampaignForm');
+        if (!form) return;
+        
+        const inputs = form.querySelectorAll('input[required], textarea[required]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => this.validateField(input));
+            input.addEventListener('input', () => this.clearFieldError(input));
+        });
+    }
+    
+    validateField(field) {
+        const value = field.value.trim();
+        let isValid = true;
+        let message = '';
+        
+        if (!value) {
+            isValid = false;
+            message = 'This field is required';
+        } else if (field.id === 'campaignTitle' && value.length < 5) {
+            isValid = false;
+            message = 'Title must be at least 5 characters long';
+        } else if (field.id === 'goalAmount' && parseFloat(value) < 1) {
+            isValid = false;
+            message = 'Goal amount must be at least $1';
+        } else if (field.id === 'campaignDescription' && value.length < 20) {
+            isValid = false;
+            message = 'Description must be at least 20 characters long';
+        }
+        
+        this.setFieldValidation(field, isValid, message);
+        return isValid;
+    }
+    
+    setFieldValidation(field, isValid, message) {
+        const feedback = document.getElementById(field.id + 'Feedback');
+        
+        field.classList.toggle('is-valid', isValid);
+        field.classList.toggle('is-invalid', !isValid);
+        
+        if (feedback) {
+            feedback.textContent = message;
+        }
+    }
+    
+    clearFieldError(field) {
+        field.classList.remove('is-invalid', 'is-valid');
+        const feedback = document.getElementById(field.id + 'Feedback');
+        if (feedback) feedback.textContent = '';
+    }
+}
+
+// Enhanced create campaign functionality
+function createCampaign() {
+    const title = document.getElementById('campaignTitle')?.value.trim();
+    const description = document.getElementById('campaignDescription')?.value.trim();
+    const goalAmount = document.getElementById('goalAmount')?.value;
+    const endDate = document.getElementById('endDate')?.value;
+    const category = document.getElementById('campaignCategory')?.value;
+    
+    // Validate form
+    const form = document.getElementById('createCampaignForm');
+    const manager = new CampaignManager();
+    
+    const titleValid = manager.validateField(document.getElementById('campaignTitle'));
+    const descValid = manager.validateField(document.getElementById('campaignDescription'));
+    const goalValid = manager.validateField(document.getElementById('goalAmount'));
+    
+    if (!titleValid || !descValid || !goalValid) {
+        showAlert('Please fix the validation errors before submitting.', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('createCampaignBtn');
+    const originalText = submitBtn?.innerHTML;
+    if (submitBtn) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+        submitBtn.disabled = true;
+    }
+    
+    // Prepare form data
+    const formData = {
+        title: title,
+        description: description,
+        goal_amount: parseFloat(goalAmount),
+        category: category || 'other'
+    };
+    
+    if (endDate) {
+        formData.end_date = endDate;
+    }
+    
+    fetch('/api/campaigns', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || data.message) {
+            showAlert('🎉 Campaign created successfully! Redirecting...', 'success');
+            
+            // Close modal and reload page
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createCampaignModal'));
+            modal?.hide();
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert(data.error || 'Failed to create campaign. Please try again.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Campaign creation error:', error);
+        showAlert('Network error. Please check your connection and try again.', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        if (submitBtn && originalText) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    new CampaignManager();
+    
+    // Set minimum date for end date input
+    const endDateInput = document.getElementById('endDate');
+    if (endDateInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        endDateInput.min = tomorrow.toISOString().split('T')[0];
+    }
+});
+</script>
+</div>
+{% endblock %}

@@ -1,0 +1,398 @@
+/* Online Donation Tracker - Modern CSS Design System */
+
+/* Import Google Font Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* CSS Variables - Design System */
+:root {
+  --primary: #1668FF;
+  --primaryDark: #0F55D5;
+  --accent: #00A8A8;
+  --bg: #F7F9FC;
+  --text: #111826;
+  --muted: #6B7280;
+  --radius: 16px;
+  --shadow-light: 0 4px 6px rgba(17, 24, 38, 0.05);
+  --shadow-medium: 0 10px 24px rgba(17, 24, 38, 0.08);
+  --shadow-heavy: 0 20px 40px rgba(17, 24, 38, 0.12);
+  --gradient-primary: linear-gradient(90deg, #0F55D5, #1668FF);
+  --gradient-hero: linear-gradient(135deg, #1668FF 0%, #0F55D5 100%);
+}
+
+/* Global Styles */
+body {
+  background-color: var(--bg);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Typography */
+.display-4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+/* Modern Card Styles */
+.card {
+  border-radius: var(--radius);
+  border: 1px solid rgba(17, 24, 38, 0.08);
+  box-shadow: var(--shadow-light);
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.card-img-top {
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+/* Modern Progress Bars */
+.progress {
+  height: 10px;
+  overflow: visible;
+  border-radius: 10px;
+  background-color: rgba(17, 24, 38, 0.08);
+}
+
+.progress-bar {
+  border-radius: 10px;
+  background: var(--gradient-primary);
+}
+
+/* Empty State Component */
+.empty {
+  border-style: dashed !important;
+  border-color: var(--muted) !important;
+  background: white;
+}
+
+.empty-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 2px dashed var(--muted);
+  border-radius: var(--radius);
+  background: white;
+}
+
+.empty-state .icon {
+  font-size: 3rem;
+  opacity: 0.6;
+  margin-bottom: 1rem;
+}
+
+/* Navbar Styles */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.navbar-custom {
+  background: var(--gradient-primary);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease;
+}
+
+.navbar-custom.scrolled {
+  box-shadow: var(--shadow-medium);
+}
+
+.navbar-custom .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.navbar-custom .nav-link:hover {
+  color: white !important;
+  transform: translateY(-1px);
+}
+
+.navbar-custom .nav-link.active {
+  color: var(--bg) !important;
+  font-weight: 600;
+}
+
+.navbar-custom .navbar-brand {
+  color: white !important;
+}
+
+/* Hero Section */
+.hero-section {
+  background: var(--gradient-hero);
+  color: white;
+  border-radius: var(--radius);
+  padding: 4rem 2rem;
+  margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.hero-section .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Button Styles */
+.btn {
+  border-radius: calc(var(--radius) / 2);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primaryDark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+/* Impact Stats */
+.impact-stat {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.impact-stat .icon {
+  font-size: 3rem;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.impact-stat .number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.impact-stat .label {
+  color: var(--muted);
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+/* Campaign Cards */
+.campaign-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.campaign-card .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.campaign-card .card-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.campaign-meta {
+  border-top: 1px solid rgba(17, 24, 38, 0.08);
+  padding-top: 1rem;
+  margin-top: auto;
+}
+
+/* Filter Bar */
+.filter-bar {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 80px;
+  z-index: 100;
+}
+
+/* Auth Forms */
+.auth-card {
+  max-width: 1200px;
+  margin: 2rem auto;
+  box-shadow: var(--shadow-medium);
+}
+
+.auth-card .card-header {
+  background: var(--gradient-primary);
+  color: white;
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(22, 104, 255, 0.25);
+}
+
+/* Password Strength Meter */
+.password-strength {
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.strength-weak { background: #dc3545; }
+.strength-medium { background: #ffc107; }
+.strength-strong { background: #28a745; }
+
+/* Footer */
+.footer {
+  background: #0B1A33;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 3rem 0 1rem;
+  margin-top: 4rem;
+}
+
+.footer h5 {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: var(--primary);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  margin-top: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Accessibility Improvements */
+.focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.nav-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 0.2rem rgba(22, 104, 255, 0.25);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2rem 1rem;
+  }
+  
+  .hero-section .display-4 {
+    font-size: 2rem;
+  }
+  
+  .filter-bar {
+    position: static;
+  }
+  
+  .impact-stat .number {
+    font-size: 2rem;
+  }
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Utility Classes */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.badge-days {
+  background: var(--accent);
+  color: white;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.card-feature {
+  border: 2px solid var(--primary);
+  background: linear-gradient(135deg, rgba(22, 104, 255, 0.05) 0%, rgba(15, 85, 213, 0.05) 100%);
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
