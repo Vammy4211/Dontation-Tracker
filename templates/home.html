@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% block title %}Home - Donation Tracker{% endblock %}
+{% block content %}
+<section class="hero-section text-white text-center py-5">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">Make a Difference Today</h1>
+                <p class="lead mb-4">Join thousands of donors supporting meaningful causes around communities worldwide.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('campaigns_page') }}" class="btn btn-light btn-lg px-4 py-2 rounded-pill" style="z-index: 10; position: relative;">Browse Campaigns</a>
+                    {% if session.user_id %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill" style="z-index: 10; position: relative;">Dashboard</a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill" style="z-index: 10; position: relative;">Start a Campaign</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="py-5 bg-white">
+    <div class="container-fluid px-4">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3" style="color: #333;">
+                <i class="fas fa-star text-warning me-2"></i>
+                Featured Campaigns
+            </h2>
+            <p class="text-muted">Discover impactful campaigns that are making a real difference in communities worldwide.</p>
+        </div>
+        {% if campaigns and campaigns|length > 0 %}
+        <div class="row g-4 justify-content-center">
+            <div class="col-12" style="max-width: 1400px;">
+                <div class="row g-4">
+                    {% for campaign in campaigns[:3] %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm campaign-card" style="border-radius: 15px; overflow: hidden;">
+                            <div class="campaign-image" style="height: 200px; background: linear-gradient(45deg, #f8f9fa, #e9ecef); position: relative; overflow: hidden;">
+                                {% if loop.index == 1 %}
+                                <div style="background: linear-gradient(45deg, #4a90e2, #357abd); display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="text-align: center;">
+                                        <i class="fas fa-graduation-cap" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                        <div style="font-size: 1.1rem; font-weight: bold;">{{ campaign.title }}</div>
+                                    </div>
+                                </div>
+                                {% elif loop.index == 2 %}
+                                <div style="background: linear-gradient(45deg, #dc3545, #c82333); display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="text-align: center;">
+                                        <i class="fas fa-home" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                        <div style="font-size: 1.1rem; font-weight: bold;">{{ campaign.title }}</div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div style="background: linear-gradient(45deg, #28a745, #218838); display: flex; align-items: center; justify-content: center; height: 100%; color: white;">
+                                    <div style="text-align: center;">
+                                        <i class="fas fa-book" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                        <div style="font-size: 1.1rem; font-weight: bold;">{{ campaign.title }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold mb-3" style="color: #333;">{{ campaign.title }}</h5>
+                                <p class="card-text text-muted mb-4" style="font-size: 0.9rem; line-height: 1.5;">{{ campaign.description[:120] }}{% if campaign.description|length > 120 %}...{% endif %}</p>
+                                <div class="mb-3">
+                                    <div class="progress mb-2" style="height: 8px; border-radius: 10px; background-color: #f1f3f4;">
+                                        <div class="progress-bar" 
+                                             style="width: {{ campaign.progress_percentage }}%; background: linear-gradient(90deg, #4a90e2, #357abd); border-radius: 10px;">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">{{ "%.0f"|format(campaign.progress_percentage) }}%</div>
+                                        <small class="text-muted">Raised</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">${{ "%.0f"|format(campaign.current_amount) }}</div>
+                                        <small class="text-muted">${{ "%.0f"|format(campaign.goal_amount) }} Goal</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">{{ campaign.progress_percentage|round|int }}%</div>
+                                        <small class="text-muted">Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                                <a href="{{ url_for('campaign_detail', campaign_id=campaign._id) }}" 
+                                   class="btn w-100 text-white fw-bold py-2 rounded-pill" style="background: linear-gradient(90deg, #4a90e2, #357abd); border: none; font-size: 0.9rem;">Support This Cause</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="row g-4 justify-content-center">
+            <div class="col-12" style="max-width: 1400px;">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm campaign-card" style="border-radius: 15px; overflow: hidden;">
+                            <div class="campaign-image" style="height: 200px; background: linear-gradient(45deg, #4a90e2, #357abd); position: relative; display: flex; align-items: center; justify-content: center;">
+                                <div style="color: white; text-align: center;">
+                                    <i class="fas fa-graduation-cap" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                    <div style="font-size: 1.1rem; font-weight: bold;">Education for Every Child</div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold mb-3" style="color: #333;">Education for Every Child</h5>
+                                <p class="card-text text-muted mb-4" style="font-size: 0.9rem; line-height: 1.5;">Every child gets to reduce an hour to the poor kids a month.</p>
+                                <div class="mb-3">
+                                    <div class="progress mb-2" style="height: 8px; border-radius: 10px; background-color: #f1f3f4;">
+                                        <div class="progress-bar" style="width: 66%; background: linear-gradient(90deg, #4a90e2, #357abd); border-radius: 10px;"></div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">66%</div>
+                                        <small class="text-muted">Raised</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">$6K</div>
+                                        <small class="text-muted">$10K Goal</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">66%</div>
+                                        <small class="text-muted">Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                                <a href="{{ url_for('campaigns_page') }}" class="btn w-100 text-white fw-bold py-2 rounded-pill" style="background: linear-gradient(90deg, #4a90e2, #357abd); border: none; font-size: 0.9rem;">Support This Cause</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm campaign-card" style="border-radius: 15px; overflow: hidden;">
+                            <div class="campaign-image" style="height: 200px; background: linear-gradient(45deg, #dc3545, #c82333); position: relative; display: flex; align-items: center; justify-content: center;">
+                                <div style="color: white; text-align: center;">
+                                    <i class="fas fa-home" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                    <div style="font-size: 1.1rem; font-weight: bold;">Earthquake Relief Fund</div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold mb-3" style="color: #333;">Earthquake Relief Fund</h5>
+                                <p class="card-text text-muted mb-4" style="font-size: 0.9rem; line-height: 1.5;">A scientific technology same disaster this month.</p>
+                                <div class="mb-3">
+                                    <div class="progress mb-2" style="height: 8px; border-radius: 10px; background-color: #f1f3f4;">
+                                        <div class="progress-bar" style="width: 80%; background: linear-gradient(90deg, #dc3545, #c82333); border-radius: 10px;"></div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">80%</div>
+                                        <small class="text-muted">Raised</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">$5K</div>
+                                        <small class="text-muted">$6K Goal</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">80%</div>
+                                        <small class="text-muted">Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                                <a href="{{ url_for('campaigns_page') }}" class="btn w-100 text-white fw-bold py-2 rounded-pill" style="background: linear-gradient(90deg, #dc3545, #c82333); border: none; font-size: 0.9rem;">Support This Cause</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="card h-100 border-0 shadow-sm campaign-card" style="border-radius: 15px; overflow: hidden;">
+                            <div class="campaign-image" style="height: 200px; background: linear-gradient(45deg, #28a745, #218838); position: relative; display: flex; align-items: center; justify-content: center;">
+                                <div style="color: white; text-align: center;">
+                                    <i class="fas fa-book" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.8;"></i>
+                                    <div style="font-size: 1.1rem; font-weight: bold;">Save Local Libraries</div>
+                                </div>
+                            </div>
+                            <div class="card-body p-4">
+                                <h5 class="card-title fw-bold mb-3" style="color: #333;">Save Local Libraries</h5>
+                                <p class="card-text text-muted mb-4" style="font-size: 0.9rem; line-height: 1.5;">Well-sourced money for help and maximum health care.</p>
+                                <div class="mb-3">
+                                    <div class="progress mb-2" style="height: 8px; border-radius: 10px; background-color: #f1f3f4;">
+                                        <div class="progress-bar" style="width: 60%; background: linear-gradient(90deg, #28a745, #218838); border-radius: 10px;"></div>
+                                    </div>
+                                </div>
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">60%</div>
+                                        <small class="text-muted">Raised</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">$12K</div>
+                                        <small class="text-muted">$20K Goal</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fw-bold" style="color: #333; font-size: 1.1rem;">60%</div>
+                                        <small class="text-muted">Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                                <a href="{{ url_for('campaigns_page') }}" class="btn w-100 text-white fw-bold py-2 rounded-pill" style="background: linear-gradient(90deg, #28a745, #218838); border: none; font-size: 0.9rem;">Support This Cause</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+<section class="py-5" style="background-color: #f8f9fa;">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-12" style="max-width: 1200px;">
+                <div class="row text-center g-4">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #4a90e2; font-size: 2.5rem; font-weight: bold;">1000+</div>
+                            <div class="stat-label text-muted" style="font-size: 0.9rem;">Active Donors</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #dc3545; font-size: 2.5rem; font-weight: bold;">❤️ 50K+</div>
+                            <div class="stat-label text-muted" style="font-size: 0.9rem;">Total Donated</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #28a745; font-size: 2.5rem; font-weight: bold;">💚 500</div>
+                            <div class="stat-label text-muted" style="font-size: 0.9rem;">Campaigns</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #17a2b8; font-size: 2.5rem; font-weight: bold;">🌍 25</div>
+                            <div class="stat-label text-muted" style="font-size: 0.9rem;">Countries</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="py-5 text-center" style="background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); color: white;">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h3 class="fw-bold mb-3">Ready to Make an Impact?</h3>
+                <p class="mb-4">Your contribution can change lives. Start your journey today.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4 py-2 rounded-pill fw-bold">Get Started</a>
+                    <a href="{{ url_for('campaigns_page') }}" class="btn btn-outline-light btn-lg px-4 py-2 rounded-pill fw-bold">Explore Campaigns</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+/* Full-width optimizations */
+.hero-section {
+    background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    min-height: 50vh;
+    display: flex;
+    align-items: center;
+}
+.campaign-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.campaign-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+.stat-card {
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+.stat-number {
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.stat-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+.progress {
+    border-radius: 10px;
+    background-color: #f1f3f4;
+}
+.progress-bar {
+    border-radius: 10px;
+}
+.btn {
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+/* Responsive optimizations */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    .stat-number {
+        font-size: 2rem !important;
+    }
+}
+@media (min-width: 1200px) {
+    .container-fluid {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}Online donation platform connecting donors with meaningful causes worldwide{% endblock %}">
+    <meta name="keywords" content="donation, charity, fundraising, campaigns, giving, nonprofit">
+    <title>{% block title %}Online Donation Tracker{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" 
+          crossorigin="anonymous">
+    <link href="{{ url_for('static', filename='assets/styles.css') }}?v=20251002-01" rel="stylesheet">
+    <style>
+        /* Ensure Bootstrap navbar styling is applied */
+        .navbar-custom {
+            background: linear-gradient(90deg, #4a90e2, #357abd) !important;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-custom .navbar-brand {
+            color: white !important;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .navbar-custom .navbar-brand:hover {
+            color: #f8f9fa !important;
+        }
+        .navbar-custom .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .navbar-custom .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .navbar-custom .nav-link.active {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+        }
+        .navbar-custom .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+        }
+        .navbar-custom .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        .navbar-custom .btn-outline-light:hover {
+            background-color: white;
+            color: #4a90e2;
+            border-color: white;
+        }
+        /* Fix button clickability issues */
+        .btn {
+            position: relative;
+            z-index: 10;
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Ensure all links are clickable */
+        a {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+        /* Remove default list styling if Bootstrap isn't loading */
+        .navbar-nav {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+        }
+        .nav-item {
+            list-style: none !important;
+            margin: 0 0.25rem !important;
+        }
+        .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        /* Campaign card improvements */
+        .campaign-card {
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .campaign-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+        }
+        /* Form improvements */
+        .form-control:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #4a90e2, #357abd);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #357abd, #2f6ca6);
+        }
+        /* Fix any overlay issues */
+        .hero-section, .section, .cta {
+            position: relative;
+            z-index: 1;
+        }
+        /* Fix button clickability and improve layout */
+        .btn {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            text-decoration: none !important;
+        }
+        .btn:hover {
+            text-decoration: none !important;
+        }
+        /* Improve login/register form styling */
+        .min-vh-100 {
+            min-height: 100vh !important;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        /* Ensure all links are clickable */
+        a {
+            cursor: pointer;
+            pointer-events: auto;
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <a class="visually-hidden-focusable" href="#main-content">Skip to main content</a>
+    <nav class="navbar navbar-expand-lg navbar-custom" role="navigation" aria-label="Main navigation">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('home') }}" aria-label="Donation Tracker Home">
+                <i class="fas fa-heart me-2" aria-hidden="true"></i>
+                <span>Donation Tracker</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" 
+                           href="{{ url_for('home') }}"
+                           {% if request.endpoint == 'home' %}aria-current="page"{% endif %}>
+                            <i class="fas fa-home me-1" aria-hidden="true"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'campaigns_page' %}active{% endif %}" 
+                           href="{{ url_for('campaigns_page') }}"
+                           {% if request.endpoint == 'campaigns_page' %}aria-current="page"{% endif %}>
+                            <i class="fas fa-list me-1" aria-hidden="true"></i>Campaigns
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    {% if session.user_id %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                               data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+                                <i class="fas fa-user-circle me-1" aria-hidden="true"></i>
+                                <span class="d-none d-md-inline">{{ session.username or 'User' }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{{ url_for('dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-2" aria-hidden="true"></i>Dashboard
+                                </a></li>
+                                {% if session.is_admin %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">
+                                    <i class="fas fa-cogs me-2" aria-hidden="true"></i>Admin Dashboard
+                                </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                                    <i class="fas fa-sign-out-alt me-2" aria-hidden="true"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">
+                                <i class="fas fa-sign-in-alt me-1" aria-hidden="true"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light ms-2 px-3" href="{{ url_for('register') }}">
+                                <i class="fas fa-user-plus me-1" aria-hidden="true"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container-fluid px-4 mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' if category == 'info' else 'check-circle' }} me-2" aria-hidden="true"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="footer mt-auto py-4 bg-light border-top" role="contentinfo">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-heart me-2" aria-hidden="true"></i>
+                        Donation Tracker
+                    </h5>
+                    <p class="text-muted mb-0">Making a difference together, one donation at a time.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-3">
+                        <a href="#" class="text-muted me-3 text-decoration-none" aria-label="Privacy Policy">Privacy Policy</a>
+                        <a href="#" class="text-muted me-3 text-decoration-none" aria-label="Terms of Service">Terms of Service</a>
+                        <a href="#" class="text-muted text-decoration-none" aria-label="Contact Us">Contact Us</a>
+                    </div>
+                    <p class="text-muted mb-0">&copy; 2024 Online Donation Tracker. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+        // CSRF Token helper for AJAX requests
+        function getCSRFToken() {
+            return document.querySelector('meta[name=csrf-token]')?.getAttribute('content');
+        }
+        // Enhanced AJAX helper for donations with better error handling
+        function makeDonation(campaignId) {
+            const amount = document.getElementById('donationAmount')?.value;
+            const message = document.getElementById('donationMessage')?.value || '';
+            const isAnonymous = document.getElementById('isAnonymous')?.checked || false;
+            const paymentMethod = document.getElementById('paymentMethod')?.value || 'credit_card';
+            // Validation
+            if (!amount || parseFloat(amount) <= 0) {
+                showAlert('Please enter a valid donation amount.', 'error');
+                return;
+            }
+            // Show loading state
+            const submitBtn = document.querySelector('[onclick*="makeDonation"]');
+            const originalText = submitBtn?.innerHTML;
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                submitBtn.disabled = true;
+            }
+            fetch('/api/donate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    campaign_id: campaignId,
+                    amount: parseFloat(amount),
+                    message: message,
+                    is_anonymous: isAnonymous,
+                    payment_method: paymentMethod
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success || data.message) {
+                    showAlert('Thank you for your donation! 🎉', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert(data.error || 'An error occurred while processing your donation.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Donation error:', error);
+                showAlert('Network error. Please check your connection and try again.', 'error');
+            })
+            .finally(() => {
+                // Restore button state
+                if (submitBtn && originalText) {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+        // Alert helper function
+        function showAlert(message, type = 'info') {
+            const alertHTML = `
+                <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            // Insert alert at the top of main content
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) {
+                mainContent.insertAdjacentHTML('afterbegin', alertHTML);
+            }
+        }
+        // Form validation helpers
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        function validatePassword(password) {
+            return password.length >= 8;
+        }
+        // Auto-dismiss alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

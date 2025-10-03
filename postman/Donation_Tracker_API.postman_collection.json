@@ -1,0 +1,647 @@
+{
+  "info": {
+    "name": "Donation Tracker API",
+    "description": "Complete API collection for the Donation Tracker application with design patterns implementation. This collection includes all endpoints for user management, campaign management, donations, and authentication.\n\n## Features\n- User registration and authentication\n- Campaign CRUD operations\n- Donation processing with multiple payment strategies\n- Administrative functions\n- Design patterns integration testing\n\n## Design Patterns Implemented\n- **Factory Pattern**: User creation (UserFactory)\n- **Singleton Pattern**: Database connection management\n- **Repository Pattern**: Data access layer\n- **Strategy Pattern**: Sorting algorithms and payment processing\n- **Observer Pattern**: Event notifications\n- **Facade Pattern**: Simplified API interfaces\n- **Proxy Pattern**: Authentication and caching\n- **Chain of Responsibility**: Request processing pipeline",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"securePassword123\",\n  \"user_type\": \"donor\",\n  \"phone_number\": \"+1-555-0123\",\n  \"address\": {\n    \"street\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"zip_code\": \"10001\",\n    \"country\": \"USA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user using the Factory pattern. The UserFactory creates appropriate user types (Donor or Admin) based on the user_type parameter."
+          },
+          "response": [
+            {
+              "name": "Successful Registration",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"securePassword123\",\n  \"user_type\": \"donor\"\n}"
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User registered successfully\",\n  \"data\": {\n    \"user_id\": \"607f1f77bcf86cd799439011\",\n    \"username\": \"john_doe\",\n    \"email\": \"john@example.com\",\n    \"user_type\": \"donor\",\n    \"created_at\": \"2023-10-01T12:00:00Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"securePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate user and receive JWT token"
+          },
+          "response": [
+            {
+              "name": "Successful Login",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"securePassword123\"\n}"
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\",\n    \"user\": {\n      \"user_id\": \"607f1f77bcf86cd799439011\",\n      \"username\": \"john_doe\",\n      \"email\": \"john@example.com\",\n      \"user_type\": \"donor\"\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Get current user profile information"
+          }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout current user and invalidate token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "description": "Campaign management endpoints with repository pattern",
+      "item": [
+        {
+          "name": "Get All Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns?page=1&limit=10&sort=date&status=active",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of campaigns per page"
+                },
+                {
+                  "key": "sort",
+                  "value": "date",
+                  "description": "Sort by: date, amount, progress, deadline, popularity"
+                },
+                {
+                  "key": "status",
+                  "value": "active",
+                  "description": "Filter by status: active, completed, cancelled"
+                }
+              ]
+            },
+            "description": "Retrieve campaigns using Repository pattern with Strategy pattern for sorting"
+          }
+        },
+        {
+          "name": "Get Campaign by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/{{campaign_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", "{{campaign_id}}"]
+            },
+            "description": "Get specific campaign details"
+          }
+        },
+        {
+          "name": "Create Campaign",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Help Build Clean Water Wells\",\n  \"description\": \"Providing clean water access to rural communities in developing countries through sustainable well construction projects.\",\n  \"goal_amount\": 50000.00,\n  \"deadline\": \"2024-12-31T23:59:59Z\",\n  \"category\": \"humanitarian\",\n  \"location\": {\n    \"country\": \"Kenya\",\n    \"region\": \"Western Province\",\n    \"coordinates\": {\n      \"latitude\": -0.0236,\n      \"longitude\": 37.9062\n    }\n  },\n  \"images\": [\n    \"https://example.com/campaign-image-1.jpg\",\n    \"https://example.com/campaign-image-2.jpg\"\n  ],\n  \"tags\": [\"water\", \"humanitarian\", \"development\", \"sustainability\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"]
+            },
+            "description": "Create new campaign using Repository pattern for persistence"
+          }
+        },
+        {
+          "name": "Update Campaign",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Campaign Title\",\n  \"description\": \"Updated campaign description\",\n  \"goal_amount\": 75000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/{{campaign_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", "{{campaign_id}}"]
+            },
+            "description": "Update existing campaign"
+          }
+        },
+        {
+          "name": "Delete Campaign",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/{{campaign_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", "{{campaign_id}}"]
+            },
+            "description": "Delete campaign (admin only)"
+          }
+        },
+        {
+          "name": "Search Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/search?q=water&category=humanitarian&min_amount=1000&max_amount=100000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "water",
+                  "description": "Search query"
+                },
+                {
+                  "key": "category",
+                  "value": "humanitarian",
+                  "description": "Campaign category"
+                },
+                {
+                  "key": "min_amount",
+                  "value": "1000",
+                  "description": "Minimum goal amount"
+                },
+                {
+                  "key": "max_amount",
+                  "value": "100000",
+                  "description": "Maximum goal amount"
+                }
+              ]
+            },
+            "description": "Search campaigns with filters"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Donations",
+      "description": "Donation processing with Strategy pattern for payments",
+      "item": [
+        {
+          "name": "Make Donation - Credit Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaign_id\": \"{{campaign_id}}\",\n  \"amount\": 100.00,\n  \"payment_method\": \"credit_card\",\n  \"payment_details\": {\n    \"card_number\": \"4111111111111111\",\n    \"expiry_month\": \"12\",\n    \"expiry_year\": \"2025\",\n    \"cvv\": \"123\",\n    \"cardholder_name\": \"John Doe\"\n  },\n  \"anonymous\": false,\n  \"message\": \"Happy to support this great cause!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/donations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "donations"]
+            },
+            "description": "Process donation using Credit Card Strategy pattern"
+          }
+        },
+        {
+          "name": "Make Donation - PayPal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaign_id\": \"{{campaign_id}}\",\n  \"amount\": 250.00,\n  \"payment_method\": \"paypal\",\n  \"payment_details\": {\n    \"paypal_email\": \"john@example.com\",\n    \"paypal_token\": \"EC-123456789\"\n  },\n  \"anonymous\": false,\n  \"message\": \"Keep up the great work!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/donations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "donations"]
+            },
+            "description": "Process donation using PayPal Strategy pattern"
+          }
+        },
+        {
+          "name": "Make Donation - Bank Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"campaign_id\": \"{{campaign_id}}\",\n  \"amount\": 500.00,\n  \"payment_method\": \"bank_transfer\",\n  \"payment_details\": {\n    \"bank_name\": \"Chase Bank\",\n    \"account_number\": \"****1234\",\n    \"routing_number\": \"021000021\",\n    \"account_holder\": \"John Doe\"\n  },\n  \"anonymous\": true,\n  \"message\": \"Anonymous donation for a great cause\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/donations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "donations"]
+            },
+            "description": "Process donation using Bank Transfer Strategy pattern"
+          }
+        },
+        {
+          "name": "Get User Donations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/donations/user",
+              "host": ["{{base_url}}"],
+              "path": ["api", "donations", "user"]
+            },
+            "description": "Get all donations made by the current user"
+          }
+        },
+        {
+          "name": "Get Campaign Donations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/donations/campaign/{{campaign_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "donations", "campaign", "{{campaign_id}}"]
+            },
+            "description": "Get all donations for a specific campaign"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative endpoints for system management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users?page=1&limit=20&user_type=all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "user_type",
+                  "value": "all",
+                  "description": "Filter by user type: all, donor, admin"
+                }
+              ]
+            },
+            "description": "Admin endpoint to retrieve all users"
+          }
+        },
+        {
+          "name": "Get System Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stats"]
+            },
+            "description": "Get system statistics and analytics"
+          }
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"suspended\",\n  \"reason\": \"Policy violation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/{{user_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "{{user_id}}", "status"]
+            },
+            "description": "Update user account status (admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Design Patterns Testing",
+      "description": "Endpoints specifically for testing design pattern implementations",
+      "item": [
+        {
+          "name": "Test Factory Pattern",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_type\": \"donor\",\n  \"user_data\": {\n    \"username\": \"test_donor\",\n    \"email\": \"test@example.com\",\n    \"password\": \"testPassword123\",\n    \"phone_number\": \"+1-555-0199\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/test/factory",
+              "host": ["{{base_url}}"],
+              "path": ["api", "test", "factory"]
+            },
+            "description": "Test UserFactory pattern by creating different user types"
+          }
+        },
+        {
+          "name": "Test Singleton Pattern",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/test/singleton",
+              "host": ["{{base_url}}"],
+              "path": ["api", "test", "singleton"]
+            },
+            "description": "Test DatabaseManager singleton pattern"
+          }
+        },
+        {
+          "name": "Test Strategy Pattern - Sorting",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/test/strategy/sort?strategy=amount&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "test", "strategy", "sort"],
+              "query": [
+                {
+                  "key": "strategy",
+                  "value": "amount",
+                  "description": "Sorting strategy: amount, date, progress, deadline, popularity"
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "description": "Sort order: asc, desc"
+                }
+              ]
+            },
+            "description": "Test different sorting strategies for campaigns"
+          }
+        },
+        {
+          "name": "Test Repository Pattern",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/test/repository/campaigns",
+              "host": ["{{base_url}}"],
+              "path": ["api", "test", "repository", "campaigns"]
+            },
+            "description": "Test CampaignRepository pattern operations"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script to set up environment variables",
+          "if (!pm.environment.get('base_url')) {",
+          "    pm.environment.set('base_url', 'http://127.0.0.1:5005');",
+          "}",
+          "",
+          "// Generate dynamic test data",
+          "pm.environment.set('timestamp', Date.now());",
+          "pm.environment.set('random_email', 'test_' + Date.now() + '@example.com');",
+          "pm.environment.set('random_username', 'user_' + Date.now());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test scripts",
+          "pm.test('Response status code is valid', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 204]);",
+          "});",
+          "",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Extract and store tokens from login responses",
+          "if (pm.response.json() && pm.response.json().data && pm.response.json().data.token) {",
+          "    pm.environment.set('auth_token', pm.response.json().data.token);",
+          "}",
+          "",
+          "// Extract and store user/campaign IDs",
+          "if (pm.response.json() && pm.response.json().data && pm.response.json().data.user_id) {",
+          "    pm.environment.set('user_id', pm.response.json().data.user_id);",
+          "}",
+          "",
+          "if (pm.response.json() && pm.response.json().data && pm.response.json().data.campaign_id) {",
+          "    pm.environment.set('campaign_id', pm.response.json().data.campaign_id);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5005",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "campaign_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

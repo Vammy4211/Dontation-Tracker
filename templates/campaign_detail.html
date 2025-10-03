@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} - Campaign Details{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1>{{ campaign.title }}</h1>
+                    <p class="text-muted">
+                        Created by {{ campaign.creator.username }} on {{ campaign.created_at.strftime('%B %d, %Y') }}
+                    </p>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-3">
+                            <h4 class="text-primary">${{ "%.0f"|format(campaign.current_amount) }}</h4>
+                            <small>Raised</small>
+                        </div>
+                        <div class="col-3">
+                            <h4 class="text-success">${{ "%.0f"|format(campaign.goal_amount) }}</h4>
+                            <small>Goal</small>
+                        </div>
+                        <div class="col-3">
+                            <h4 class="text-info">{{ "%.1f"|format(campaign.progress_percentage) }}%</h4>
+                            <small>Funded</small>
+                        </div>
+                        <div class="col-3">
+                            <h4 class="text-warning">{{ campaign.donations|length }}</h4>
+                            <small>Backers</small>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 12px;">
+                        <div class="progress-bar" style="width: {{ campaign.progress_percentage }}%"></div>
+                    </div>
+                    
+                    <h5>About This Campaign</h5>
+                    <p>{{ campaign.description }}</p>
+                    
+                    {% if campaign.is_active %}
+                    <div class="alert alert-success">Campaign is active and accepting donations.</div>
+                    {% else %}
+                    <div class="alert alert-warning">Campaign is currently inactive.</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Recent Donations</h5>
+                </div>
+                <div class="card-body">
+                    {% if donations %}
+                    {% for donation in donations %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <strong>
+                                {% if donation.get('is_anonymous', False) %}Anonymous{% else %}{{ donation.donor.username if donation.donor else 'Unknown User' }}{% endif %}
+                            </strong>
+                            {% if donation.message %}<br><small class="text-muted">"{{ donation.message }}"</small>{% endif %}
+                            <br><small>{{ donation.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <span class="badge bg-primary">${{ "%.2f"|format(donation.amount) }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted">No donations yet. Be the first to support this campaign!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {% if session.user_id and campaign.is_active %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Make a Donation</h5>
+                </div>
+                <div class="card-body">
+                    <form id="donationForm">
+                        <div class="mb-3">
+                            <label for="donationAmount" class="form-label">Amount ($)</label>
+                            <input type="number" class="form-control" id="donationAmount" min="1" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="btn-group w-100">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(10)">$10</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(25)">$25</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(50)">$50</button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setAmount(100)">$100</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="donationMessage" class="form-label">Message (Optional)</label>
+                            <textarea class="form-control" id="donationMessage" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isAnonymous">
+                                <label class="form-check-label" for="isAnonymous">Donate anonymously</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Donate Now</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if not session.user_id %}
+                    <h5>Want to donate?</h5>
+                    <p class="text-muted">Please log in to make a donation.</p>
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                    {% else %}
+                    <h5>Campaign Inactive</h5>
+                    <p class="text-muted">This campaign is not currently accepting donations.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+                    <textarea class="form-control" id="donationMessage" rows="3" placeholder="Share why you're supporting this cause..."></textarea>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="isAnonymous">
+                    <label class="form-check-label" for="isAnonymous">
+                        Donate anonymously
+                    </label>
+                </div>
+                <div class="d-grid">
+                    <button type="button" class="btn btn-success btn-lg" onclick="makeDonation('{{ campaign._id }}')">
+                        <i class="fas fa-heart"></i> Donate Now
+                    </button>
+                </div>
+            </form>
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt"></i> Secure donation powered by SSL encryption
+                </small>
+            </div>
+        </div>
+        {% elif not session.user_id %}
+        <div class="donation-form text-center">
+            <h4><i class="fas fa-heart text-danger"></i> Support This Campaign</h4>
+            <p class="text-muted">Join our community to make a donation</p>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">
+<script>
+function setAmount(amount) {
+    document.getElementById('donationAmount').value = amount;
+}
+
+document.getElementById('donationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const amount = document.getElementById('donationAmount').value;
+    const message = document.getElementById('donationMessage').value;
+    const isAnonymous = document.getElementById('isAnonymous').checked;
+    
+    if (!amount || amount <= 0) {
+        alert('Please enter a valid donation amount');
+        return;
+    }
+    
+    fetch('/api/donate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            'campaign_id': '{{ campaign._id }}',
+            'amount': parseFloat(amount),
+            'message': message,
+            'is_anonymous': isAnonymous
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Thank you for your donation!');
+            location.reload();
+        } else {
+            alert('Error processing donation: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing donation');
+    });
+});
+</script>
+{% endblock %}
+            campaign_id: campaignId,
+            amount: parseFloat(amount),
+            message: message,
+            is_anonymous: isAnonymous
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert('Thank you for your generous donation! 🎉');
+            location.reload();
+        } else {
+            alert(data.error || 'An error occurred while processing your donation');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing your donation');
+    });
+}
+</script>
+</div>
+{% endblock %}
